@@ -7,20 +7,32 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import ru.feoktitsov.springcourse.FirstSecurityApp.security.AuthProviderImpl;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import ru.feoktitsov.springcourse.FirstSecurityApp.services.PersonDetailsService;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    private final PersonDetailsService personDetailsService;
+
     @Autowired
-    private AuthProviderImpl authProvider;
+    public SecurityConfig(PersonDetailsService personDetailsService) {
+        this.personDetailsService = personDetailsService;
+    }
 
     @Bean
     public AuthenticationManager authManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder =
                 http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.authenticationProvider(this.authProvider);
+        authenticationManagerBuilder.userDetailsService(personDetailsService);
 
         return authenticationManagerBuilder.build();
+    }
+
+    @Bean
+    public PasswordEncoder getPasswordEncoder() {
+        return NoOpPasswordEncoder.getInstance();
     }
 }
