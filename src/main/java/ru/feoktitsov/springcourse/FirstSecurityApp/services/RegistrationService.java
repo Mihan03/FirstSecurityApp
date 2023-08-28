@@ -1,9 +1,7 @@
 package ru.feoktitsov.springcourse.FirstSecurityApp.services;
 
-import jakarta.persistence.Transient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.feoktitsov.springcourse.FirstSecurityApp.models.Person;
@@ -12,14 +10,18 @@ import ru.feoktitsov.springcourse.FirstSecurityApp.repositories.PeopleRepository
 @Service
 public class RegistrationService {
     private final PeopleRepository peopleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public RegistrationService(PeopleRepository peopleRepository) {
+    public RegistrationService(PeopleRepository peopleRepository, PasswordEncoder passwordEncoder) {
         this.peopleRepository = peopleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public void register(Person person)  {
+        person.setPassword(passwordEncoder.encode(person.getPassword()));
+
         peopleRepository.save(person);
     }
 }
