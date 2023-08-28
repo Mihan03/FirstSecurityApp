@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import ru.feoktitsov.springcourse.FirstSecurityApp.services.PersonDetailsService;
 
 @Configuration
@@ -22,6 +23,7 @@ public class SecurityConfig {
         this.personDetailsService = personDetailsService;
     }
 
+    // Configuration settings
     @Bean
     public AuthenticationManager authManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder =
@@ -29,6 +31,24 @@ public class SecurityConfig {
         authenticationManagerBuilder.userDetailsService(personDetailsService);
 
         return authenticationManagerBuilder.build();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf().disable()
+                .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("/auth/login", "/auth/registration", "/error").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/auth/login")
+                        .loginProcessingUrl("/process_login")
+                        .defaultSuccessUrl("/hello", true)
+                        .failureUrl("/auth/login?error")
+                )
+                .logout();
+        return http.build();
     }
 
     @Bean
